@@ -21,7 +21,7 @@ Da das Programm direkten Zugriff auf die physikalischen Sektoren
 der Festplatte hat, muss es mit Root-Rechten gestartet werden.
 
 
-![alt text](https://github.com/Woodstock99/WDE/blob/main/screenshot.png)
+![alt text](https://github.com/Woodstock99/Woddy-s-Disk-Explorer/blob/main/screenshot.png)
 
 
 ### Anforderungen:
