@@ -14,14 +14,14 @@ kann. Die obere Button-Leiste ermöglicht ein schnelles Vor- und
 Zurückblättern.
 
 Das Programm wird immer im Schreibschutz-Modus (read only) gestartet, 
-da unsachgemäßes Schreiben in Sektoren bis zum Totalverlust aller Daten 
+da unsachgemäßes Schreiben in Sektoren evtl. bis zum Totalverlust aller Daten 
 führen kann.
 
 Da das Programm direkten Zugriff auf die physikalischen Sektoren 
 der Festplatte hat, muss es mit Root-Rechten gestartet werden.
 
 
-![alt text](https://github.com/Woodstock99/Woddy-s-Disk-Explorer/blob/main/screenshot.png)
+![alt text](https://github.com/Woodstock99/Woody-s-Disk-Explorer/blob/main/screenshot.png)
 
 
 ### Anforderungen:
