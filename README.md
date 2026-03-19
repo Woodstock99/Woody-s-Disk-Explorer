@@ -6,7 +6,7 @@ Woody's Disk Explorer stellt die physischen Sektoren einer Festplatte
 (HDD/SSD/USB) dar. Die Sektoren können analysiert, überprüft und bei 
 Bedarf auch editiert werden. Backup-Funktionen ermöglichen die 
 Wiederherstellung von Partitionstabellen, Bootrecords oder auch 
-ganzen Blöcken von Sektoren.
+ganzen Sektorblöcken.
 
 Pro Seite werden 128 Sektoren angezeigt, die man entweder mit der 
 Maus scrollen oder sektorweise mit den Pfeiltasten <↑↓> durchsuchen 
