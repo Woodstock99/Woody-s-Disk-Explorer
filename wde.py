@@ -606,20 +606,17 @@ def MBR_Wiederherstellen():
 
     global SektData
 
-    if message.askyesno(Device, "\nSoll der MBR von \"" + Device[5:8] + "\" überschrieben werden?  "):
+    mbrDatei = "wde*_" + Device[5:8] + "__MasterBootRecord.bin"
+    pfadName = fdialog.askopenfilename(title="MasterBootRecord-Backup für " + Device[5:8] + " öffnen",filetypes=[("",mbrDatei),("Binärdateien","*.bin")])
 
-        mbrDatei = "wde*_" + Device[5:8] + "__MasterBootRecord.bin"
-        pfadName = fdialog.askopenfilename(title="MasterBootRecord-Backup für " + Device[5:8] + " öffnen",filetypes=[("",mbrDatei),("Binärdateien","*.bin")])
-
-        if pfadName:
+    if pfadName:
+        if message.askyesno(Device, "\nSoll der MBR mit \"" + os.path.basename(pfadName) + "\" überschrieben werden?  "):
             if ReadOnly.get() == 0:
                 with open(pfadName, "rb") as fp:
                     SektData = fp.read(512)
-                    if Schreibe_Sektor(Device[0:8], 0):
-                        Zeige_Sektorenblock()
-                        message.showinfo(Device, "\nDer MBR wurde mit \"" + os.path.basename(pfadName) + "\" überschrieben.  ")
-                    else: 
-                        message.showerror(Device, "\nDer MBR konnte nicht überschrieben werden.  ")
+                Schreibe_Sektor(Device[0:8], 0):
+                Zeige_Sektorenblock()
+                message.showinfo(Device, "\nDer MasterBootRecord wurde überschrieben.  ")
             else:
                 message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
 
@@ -632,20 +629,17 @@ def Bootsektor_Wiederherstellen():
     if len(Device) == 8:    xDevice = Device + "1"
     else:                   xDevice = Device
 
-    if message.askyesno(xDevice, "\nSoll der Bootsektor von \"" + xDevice[5:9] + "\" überschrieben werden?  "):
+    bootDatei = "wde*_" + xDevice[5:9] + "_BootSector.bin"
+    pfadName = fdialog.askopenfilename(title="Bootsektor-Backup für " + xDevice[5:9] + " öffnen",filetypes=[("",bootDatei),("Binärdateien","*.bin")])
 
-        bootDatei = "wde*_" + xDevice[5:9] + "_BootSector.bin"
-        pfadName = fdialog.askopenfilename(title="Bootsektor-Backup für " + xDevice[5:9] + " öffnen",filetypes=[("",bootDatei),("Binärdateien","*.bin")])
-
-        if pfadName:
+    if pfadName:
+        if message.askyesno(xDevice, "\nSoll der Bootsektor mit \"" + os.path.basename(pfadName) + "\" überschrieben werden?  "):
             if ReadOnly.get() == 0:
                 with open(pfadName, "rb") as fp:
                     SektData = fp.read(512)
-                    if Schreibe_Sektor(xDevice, 0):
-                        Zeige_Sektorenblock()
-                        message.showinfo(xDevice, "\nDer Bootsektor wurde mit \"" + os.path.basename(pfadName) + "\" überschrieben.  ")
-                    else: 
-                        message.showerror(xDevice, "\nDer Bootsektor konnte nicht überschrieben werden.  ")
+                Schreibe_Sektor(xDevice, 0):
+                Zeige_Sektorenblock()
+                message.showinfo(xDevice, "\nDer Bootsektor wurde überschrieben.  ")
             else:
                 message.showwarning(xDevice, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
 
