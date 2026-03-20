@@ -614,7 +614,7 @@ def MBR_Wiederherstellen():
             if ReadOnly.get() == 0:
                 with open(pfadName, "rb") as fp:
                     SektData = fp.read(512)
-                Schreibe_Sektor(Device[0:8], 0):
+                Schreibe_Sektor(Device[0:8], 0)
                 Zeige_Sektorenblock()
                 message.showinfo(Device, "\nDer MasterBootRecord wurde überschrieben.  ")
             else:
@@ -637,7 +637,7 @@ def Bootsektor_Wiederherstellen():
             if ReadOnly.get() == 0:
                 with open(pfadName, "rb") as fp:
                     SektData = fp.read(512)
-                Schreibe_Sektor(xDevice, 0):
+                Schreibe_Sektor(xDevice, 0)
                 Zeige_Sektorenblock()
                 message.showinfo(xDevice, "\nDer Bootsektor wurde überschrieben.  ")
             else:
