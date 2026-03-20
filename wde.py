@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-#   Woody's Disk Explorer v1.11
+#   Woody's Disk Explorer v1.05
 #
 ##############################################################################################################
 
@@ -89,7 +89,7 @@ def Sektor_Bin2Text(sektnum):
 
 ##############################################################################################################
 
-def Zeige_Sektoren_Block():
+def Zeige_Sektorenblock():
 
     Haupt_Fenster.configure(state="normal")
     Haupt_Fenster.delete("1.0", "end")
@@ -114,7 +114,7 @@ def Sektoren_Erster():
     global SektNum
 
     SektNum = 0
-    Zeige_Sektoren_Block()
+    Zeige_Sektorenblock()
 
 ##############################################################################################################
 
@@ -124,7 +124,7 @@ def Sektoren_Weiter(nr):
 
     if (SektNum + nr) >= 0:    SektNum += nr
     else:                      SektNum = 0
-    Zeige_Sektoren_Block()
+    Zeige_Sektorenblock()
     return "break"                                # eingebaute <Pfeiltaste> ignorieren
 
 ##############################################################################################################
@@ -177,9 +177,8 @@ def Sektoren_Letzter():
             f.seek(0, os.SEEK_END)
             gesamt_byte = f.tell()
             gesamt_sekt = int(gesamt_byte / 512)
-            #print(gesamt_sekt)
             SektNum = gesamt_sekt - 128           # 128 Sektoren pro Seite
-            Zeige_Sektoren_Block()
+            Zeige_Sektorenblock()
             return True
     except:
         return False
@@ -196,7 +195,7 @@ def SektNum_Eingeben(event=None):
 
         if Eingabe.isdecimal():
             SektNum = int(Eingabe)
-            Zeige_Sektoren_Block()
+            Zeige_Sektorenblock()
             Fenster.destroy()
 
     Fenster = tk.Toplevel(Master)
@@ -225,7 +224,7 @@ def Device_Auswaehlen(event=None):
         if Lese_Sektor(Eingabe, 0):
             Device = Eingabe
             SektNum = 0
-            Zeige_Sektoren_Block()
+            Zeige_Sektorenblock()
             Fenster.destroy()
 
     Fenster = tk.Toplevel(Master)
@@ -248,7 +247,6 @@ def Device_Auswaehlen(event=None):
 
 ##############################################################################################################
 
-
 ##############################################################################################################
 
 def Zeige_Partitionstabelle():
@@ -259,13 +257,11 @@ def Zeige_Partitionstabelle():
     Anzahl = [0,0,0,0]
     Groesse = [0,0,0,0]
 
-    laufwerk = Device[0:8]    # Keine Partitionen!!
-
-    if Lese_Sektor(laufwerk, 0):
+    if Lese_Sektor(Device[0:8], 0):
 
         Fenster = tk.Toplevel(Master)
-        Fenster.title("Partitionstabelle:  " + laufwerk)
-        Fenster.geometry("+" + str(Master.winfo_x()+330) + "+" + str(Master.winfo_y()+400)) 
+        Fenster.title(Device[0:8] + " - Partitionstabelle")
+        Fenster.geometry("+" + str(Master.winfo_x()+310) + "+" + str(Master.winfo_y()+400)) 
         Fenster.resizable(False, False)
         Fenster.wm_attributes("-topmost", 1)
 
@@ -290,7 +286,7 @@ def Zeige_Partitionstabelle():
         PartText.configure(state="disabled")
         Fenster.bind("<Escape>", lambda event: Fenster.destroy())
     else:
-        message.showwarning(Device, "\nDer MBR von " + laufwerk + " konnte nicht gelesen werden!  ")
+        message.showwarning(Device, "\nDer MBR von " + Device[0:8] + " konnte nicht gelesen werden!  ")
 
 ##############################################################################################################
 
@@ -303,9 +299,7 @@ def Erweiterte_Partitionen():
     Sektor = 0
     Erweitert = 0
 
-    laufwerk = Device[0:8]    # Keine Partitionen!!
-
-    if Lese_Sektor(laufwerk, 0):
+    if Lese_Sektor(Device[0:8], 0):
 
         for i in range(4):
             if SektData[0x01C2+16*i] == 0x05:
@@ -320,8 +314,8 @@ def Erweiterte_Partitionen():
         if Erweitert == 1:
 
             Fenster = tk.Toplevel(Master)
-            Fenster.title("Erweiterte Partitionen:  " + laufwerk)
-            Fenster.geometry("+" + str(Master.winfo_x()+350) + "+" + str(Master.winfo_y()+400)) 
+            Fenster.title(Device[0:8] + " - Erweiterte Partitionen")
+            Fenster.geometry("+" + str(Master.winfo_x()+330) + "+" + str(Master.winfo_y()+400)) 
             Fenster.resizable(False, False)
             Fenster.wm_attributes("-topmost", 1)
 
@@ -332,7 +326,7 @@ def Erweiterte_Partitionen():
 
             Anfang = 0
             while Typ != 0:
-                if Lese_Sektor(laufwerk, Sektor+Anfang):
+                if Lese_Sektor(Device[0:8], Sektor+Anfang):
                     Typ = int(SektData[0x01C2])
                     Anfang = int(SektData[0x01C6] + SektData[0x01C7]*256 + SektData[0x01C8]*65536 + SektData[0x01C9]*16777216)
                     Anzahl = int(SektData[0x01CA] + SektData[0x01CB]*256 + SektData[0x01CC]*65536 + SektData[0x01CD]*16777216)
@@ -350,7 +344,7 @@ def Erweiterte_Partitionen():
         else:
             message.showinfo(Device, "\nKeine erweiterten Partitionen gefunden.  ")
     else:
-        message.showwarning(Device, "\nDer MBR von " + laufwerk + " konnte nicht gelesen werden!  ")
+        message.showwarning(Device, "\nDer MBR von " + Device[0:8] + " konnte nicht gelesen werden!  ")
 
 ##############################################################################################################
 
@@ -362,19 +356,17 @@ def EFI_Partitionen():
     Anzahl = [0,0,0,0]
     Groesse = [0,0,0,0]
 
-    laufwerk = Device[0:8]    # Keine Partitionen!!
-
-    if Lese_Sektor(laufwerk, 1):
+    if Lese_Sektor(Device[0:8], 1):
 
         if SektData[0:8] == ("EFI PART").encode("utf-8"):
 
             Fenster = tk.Toplevel(Master)
-            Fenster.title("EFI Partitionstabelle:  " + laufwerk)
+            Fenster.title(Device[0:8] + " - EFI Partitionstabelle")
             Fenster.geometry("+" + str(Master.winfo_x()+270) + "+" + str(Master.winfo_y()+400)) 
             Fenster.resizable(False, False)
             Fenster.wm_attributes("-topmost", 1)
 
-            Lese_Sektor(laufwerk, 2)
+            Lese_Sektor(Device[0:8], 2)
             for i in range(4):
                 Anfang[i] = int(SektData[0x0020+128*i]        + SektData[0x0021+128*i]*256    + SektData[0x0022+128*i]*256**2 + SektData[0x0023+128*i]*256**3) +\
                             int(SektData[0x0024+128*i]*256**4 + SektData[0x0025+128*i]*256**5 + SektData[0x0026+128*i]*256**6 + SektData[0x0027+128*i]*256**7)
@@ -401,19 +393,19 @@ def EFI_Partitionen():
         else:
             message.showinfo(Device, "\nKeine EFI Partition gefunden. ")
     else:
-        message.showwarning(Device, "\nDer 2.Sektor von " + laufwerk + " konnte nicht gelesen werden!  ")
+        message.showwarning(Device, "\nDer 2.Sektor von " + Device[0:8] + " konnte nicht gelesen werden!  ")
 
 ##############################################################################################################
 
 def Zeige_BPB_FAT32():
 
-    if len(Device) == 8:  laufwerk = Device + "1"
-    else:                 laufwerk = Device
+    if len(Device) == 8:  xDevice = Device + "1"
+    else:                 xDevice = Device
 
-    if Lese_Sektor(laufwerk, 0):
+    if Lese_Sektor(xDevice, 0):
 
         Fenster = tk.Toplevel(Master)
-        Fenster.title("BPB - FAT32:  " + laufwerk)
+        Fenster.title(xDevice + " - BPB - FAT32")
         Fenster.geometry("+" + str(Master.winfo_x()+530) + "+" + str(Master.winfo_y()+340)) 
         Fenster.resizable(False, False)
         Fenster.wm_attributes("-topmost", 1)
@@ -443,19 +435,19 @@ def Zeige_BPB_FAT32():
         BiosText.configure(state="disabled")
         Fenster.bind("<Escape>", lambda event: Fenster.destroy())
     else:
-        message.showwarning(Device, "\nDer Bootsektor von " + laufwerk + " konnte nicht gelesen werden!  ")
+        message.showwarning(Device, "\nDer Bootsektor von " + xDevice + " konnte nicht gelesen werden!  ")
 
 ##############################################################################################################
 
 def Zeige_BPB_NTFS():
 
-    if len(Device) == 8:  laufwerk = Device + "1"
-    else:                 laufwerk = Device
+    if len(Device) == 8:  xDevice = Device + "1"
+    else:                 xDevice = Device
 
-    if Lese_Sektor(laufwerk, 0):
+    if Lese_Sektor(xDevice, 0):
 
         Fenster = tk.Toplevel(Master)
-        Fenster.title("BPB - NTFS:  " + laufwerk)
+        Fenster.title(xDevice + " - BPB - NTFS")
         Fenster.geometry("+" + str(Master.winfo_x()+530) + "+" + str(Master.winfo_y()+340)) 
         Fenster.resizable(False, False)
         Fenster.wm_attributes("-topmost", 1)
@@ -485,7 +477,7 @@ def Zeige_BPB_NTFS():
         BiosText.configure(state="disabled")
         Fenster.bind("<Escape>", lambda event: Fenster.destroy())
     else:
-        message.showwarning(Device, "\nDer Bootsektor von " + laufwerk + " konnte nicht gelesen werden!  ")
+        message.showwarning(Device, "\nDer Bootsektor von " + xDevice + " konnte nicht gelesen werden!  ")
 
 ##############################################################################################################
 
@@ -499,14 +491,14 @@ def Zeige_EXT4_Info():
         return text
 
 
-    if len(Device) == 8:  laufwerk = Device + "1"
-    else:                 laufwerk = Device
+    if len(Device) == 8:  xDevice = Device + "1"
+    else:                 xDevice = Device
 
-    if Lese_Sektor(laufwerk, 2):
+    if Lese_Sektor(xDevice, 2):
 
         Fenster = tk.Toplevel(Master)
-        Fenster.title("EXT4 Info:  " + laufwerk)
-        Fenster.geometry("+" + str(Master.winfo_x()+500) + "+" + str(Master.winfo_y()+340)) 
+        Fenster.title(xDevice + " - EXT4 Info")
+        Fenster.geometry("+" + str(Master.winfo_x()+470) + "+" + str(Master.winfo_y()+340)) 
         Fenster.resizable(False, False)
         Fenster.wm_attributes("-topmost", 1)
 
@@ -542,50 +534,49 @@ def Zeige_EXT4_Info():
 
 ##############################################################################################################
 
-
 #############################################################################################################
 
 def Master_Boot_Record_Sichern():
 
     if Lese_Sektor(Device[0:8], 0):
-        dName = "wde_" + Device[5:8] + "__MasterBootRecord.bin"
-        with open(dName, "wb") as datei:
+        datName = "wde_" + Device[5:8] + "__MasterBootRecord.bin"
+        with open(datName, "wb") as datei:
             datei.write(SektData)
-        message.showinfo(Device, "\nDer MBR wurde in \"" + dName + "\" gesichert.  ")
+        message.showinfo(Device, "\nDer MBR wurde in \"" + datName + "\" gesichert.  ")
 
 ##############################################################################################################
 
 def Bootsektor_Sichern():
 
-    if len(Device) == 8:    laufwerk = Device + "1"
-    else:                   laufwerk = Device
+    if len(Device) == 8:    xDevice = Device + "1"
+    else:                   xDevice = Device
 
-    if Lese_Sektor(laufwerk, 0):
-        dName = "wde_" + laufwerk[5:9] + "_BootSector.bin"
-        with open(dName, "wb") as datei:
+    if Lese_Sektor(xDevice, 0):
+        datName = "wde_" + xDevice[5:9] + "_BootSector.bin"
+        with open(datName, "wb") as datei:
             datei.write(SektData)
-        message.showinfo(Device, "\nDer Bootsektor wurde in \"" + dName + "\" gesichert.  ")
+        message.showinfo(Device, "\nDer Bootsektor wurde in \"" + datName + "\" gesichert.  ")
 
 ##############################################################################################################
 
-def Sektoren_Bloecke_Sichern():
+def Sektorenblock_Sichern():
 
     def Sektoren_Sichern(e):
 
         Erster = EingabeErster.get()
         Anzahl = EingabeAnzahl.get()
 
-        if len(Device) == 8:    nDevice = Device + "_"
-        else:                   nDevice = Device
+        if len(Device) == 8:    xDevice = Device + "_"
+        else:                   xDevice = Device
 
         if Erster.isdecimal() and Anzahl.isdecimal():
-            dName = "wde_" + nDevice[5:9] + "_x" + Erster + "_n" + Anzahl + ".bin"
-            with open(dName, "wb") as datei:
+            datName = "wde_" + xDevice[5:9] + "_x" + Erster + "_n" + Anzahl + ".bin"
+            with open(datName, "wb") as datei:
                 for i in range(int(Anzahl)):
                     if Lese_Sektor(Device, int(Erster)+i):
                         datei.write(SektData)
             Fenster.destroy()
-            message.showinfo(Device, "\nDie Sektoren wurden in \"" + dName + "\" gesichert.  ")
+            message.showinfo(Device, "\nDie Sektoren wurden in \"" + datName + "\" gesichert.  ")
 
     Fenster = tk.Toplevel(Master)
     Fenster.title(Device)
@@ -617,20 +608,20 @@ def MBR_Wiederherstellen():
 
     if message.askyesno(Device, "\nSoll der MBR von \"" + Device[5:8] + "\" überschrieben werden?  "):
 
-        if ReadOnly.get() == 0:
-            dName = "wde_" + Device[5:8] + "__MasterBootRecord.bin"
-            try:
-                with open(dName, "rb") as fp:
+        mbrDatei = "wde*_" + Device[5:8] + "__MasterBootRecord.bin"
+        pfadName = fdialog.askopenfilename(title="MasterBootRecord-Backup für " + Device[5:8] + " öffnen",filetypes=[("",mbrDatei),("Binärdateien","*.bin")])
+
+        if pfadName:
+            if ReadOnly.get() == 0:
+                with open(pfadName, "rb") as fp:
                     SektData = fp.read(512)
                     if Schreibe_Sektor(Device[0:8], 0):
-                        Zeige_Sektoren_Block()
-                        message.showinfo(Device, "\nDer MBR wurde mit \"" + os.path.basename(dName) + "\" überschrieben.  ")
+                        Zeige_Sektorenblock()
+                        message.showinfo(Device, "\nDer MBR wurde mit \"" + os.path.basename(pfadName) + "\" überschrieben.  ")
                     else: 
                         message.showerror(Device, "\nDer MBR konnte nicht überschrieben werden.  ")
-            except:
-                message.showerror(Device, "\nDie Datei \"" + os.path.basename(dName) + "\" wurde nicht gefunden.  ")
-        else:
-            message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
+            else:
+                message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
 
 ##############################################################################################################
 
@@ -638,64 +629,63 @@ def Bootsektor_Wiederherstellen():
 
     global SektData
 
-    if len(Device) == 8:    laufwerk = Device + "1"
-    else:                   laufwerk = Device
+    if len(Device) == 8:    xDevice = Device + "1"
+    else:                   xDevice = Device
 
-    if message.askyesno(laufwerk, "\nSoll der Bootsektor von \"" + laufwerk[5:9] + "\" überschrieben werden?  "):
+    if message.askyesno(xDevice, "\nSoll der Bootsektor von \"" + xDevice[5:9] + "\" überschrieben werden?  "):
 
-        if ReadOnly.get() == 0:
-            dName = "wde_" + laufwerk[5:9] + "_BootSector.bin"
-            try:
-                with open(dName, "rb") as fp:
+        bootDatei = "wde*_" + xDevice[5:9] + "_BootSector.bin"
+        pfadName = fdialog.askopenfilename(title="Bootsektor-Backup für " + xDevice[5:9] + " öffnen",filetypes=[("",bootDatei),("Binärdateien","*.bin")])
+
+        if pfadName:
+            if ReadOnly.get() == 0:
+                with open(pfadName, "rb") as fp:
                     SektData = fp.read(512)
-                    if Schreibe_Sektor(laufwerk[0:], 0):
-                        Zeige_Sektoren_Block()
-                        message.showinfo(Device, "\nDer Bootsektor wurde mit \"" + os.path.basename(dName) + "\" überschrieben.  ")
+                    if Schreibe_Sektor(xDevice, 0):
+                        Zeige_Sektorenblock()
+                        message.showinfo(xDevice, "\nDer Bootsektor wurde mit \"" + os.path.basename(pfadName) + "\" überschrieben.  ")
                     else: 
-                        message.showerror(Device, "\nDer Bootsektor konnte nicht überschrieben werden.  ")
-            except:
-                message.showerror(Device, "\nDie Datei \"" + os.path.basename(dName) + "\" wurde nicht gefunden.  ")
-        else:
-            message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
+                        message.showerror(xDevice, "\nDer Bootsektor konnte nicht überschrieben werden.  ")
+            else:
+                message.showwarning(xDevice, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
 
 ##############################################################################################################
 
-def Sektoren_Bloecke_Schreiben():
+def Sektorenblock_Schreiben():
 
     global SektData
 
-    dName = fdialog.askopenfilename(filetypes=[("Binärdateien","*.bin"),("Alle Dateien","*")])
+    if len(Device) == 8:
+        blockDatei = "wde*_" + Device[5:8] + "__x*_n*.bin"
+    else:
+        blockDatei = "wde*_" + Device[5:9] + "_x*_n*.bin"
 
-    if dName:
-        bName = os.path.basename(dName)
+    pfadName = fdialog.askopenfilename(title="Sektorenblock-Datei für " + Device[5:] + " öffnen",filetypes=[("",blockDatei),("Binärdateien","*.bin")])
 
-        if bName[0:4] == "wde_" and bName[8:10] == "_x":
-            d1 = bName.find("wde_")
-            d2 = bName.find('_', d1+4)
-            laufwerk = bName[d1+4:d2]
-            s1 = bName.find("_x")
-            s2 = bName.find('_', s1+2)
-            Erster = bName[s1+2:s2]
-            n1 = bName.find("_n")
-            n2 = bName.find('.', n1+2)
-            Anzahl = bName[n1+2:n2]
-            Letzter = int(Erster) + int(Anzahl) -1
-            if message.askyesno(Device, "\nSollen auf /dev/" + laufwerk + " die Sektoren " + Erster + " bis " + str(Letzter) + " überschrieben werden?   "):
+    if pfadName:
+        datName = os.path.splitext(os.path.basename(pfadName))[0]
+
+        if datName[0:3] == "wde" and datName.find("_x") != -1 and datName.find("_n") != -1:
+            x1 = datName.find("_x")
+            x2 = datName.find("_", x1+2)
+            erster = int(datName[x1+2:x2])
+            n1 = datName.find("_n")
+            anzahl = int(datName[n1+2:])
+
+            if message.askyesno(Device, "\nSollen die Sektoren " + str(erster) + " bis " + str(erster+anzahl-1) + " überschrieben werden?  "):
                 if ReadOnly.get() == 0:
-                    aDevice = "/dev/" + laufwerk
-                    with open(dName, "rb") as fp:
-                        for i in range(int(Anzahl)):
+                    with open(pfadName, "rb") as fp:
+                        for i in range(int(anzahl)):
                             SektData = fp.read(512)
-                            Schreibe_Sektor(aDevice, int(Erster)+i)
-                    Zeige_Sektoren_Block()
-                    message.showinfo(Device, "\nDie Sektoren " + Erster + " bis " + str(Letzter) + " auf \"" + laufwerk + "\" wurden überschrieben.   ")
+                            Schreibe_Sektor(Device, int(erster)+i)
+                    Zeige_Sektorenblock()
+                    message.showinfo(Device, "\nDie Sektoren " + str(erster) + " bis " + str(erster+anzahl-1) + " wurden überschrieben.  ")
                 else:
                     message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.   ")
         else:
-            message.showwarning(Device, "\n\"" + bName + "\" ist kein gültiges Dateiformat.   ")
+            message.showwarning(Device, "\nUnbekannter Dateiname \"" + os.path.basename(pfadName) + "\"  ")
 
 ##############################################################################################################
-
 
 ##############################################################################################################
 
@@ -720,14 +710,14 @@ def Musterdatei_Erstellen():
         Sekt2Data.clear()
         for i in range(int(512/len(strBytes))+1):
             Sekt2Data += strBytes 
-        dName = "wde_Muster_" + datName + ".bin"
+        datName = "wde_Muster_" + datName + ".bin"
         try:
-            with open(dName, "wb") as fp:
+            with open(datName, "wb") as fp:
                 fp.write(Sekt2Data[0:512])
             Fenster.destroy()
-            message.showinfo(Device, "\nDie Musterdatei \"" + os.path.basename(dName) + "\" wurde erstellt. ")
+            message.showinfo(Device, "\nDie Musterdatei \"" + datName + "\" wurde erstellt. ")
         except:
-            message.showerror(Device, "\nDie Datei \"" + os.path.basename(dName) + "\" konnte nicht erstellt werden. ", parent=Fenster)
+            message.showerror(Device, "\nDie Datei \"" + datName + "\" konnte nicht erstellt werden. ", parent=Fenster)
             return
 
     def Auswahl_Eingabe():
@@ -798,19 +788,19 @@ def Muster_Schreiben():
                 if ReadOnly.get() == 0:
                     for i in range(int(Anzahl)):
                         Schreibe_Sektor(Device, int(Erster)+i)
-                    Zeige_Sektoren_Block()
-                    message.showinfo(Device, "\nDie Sektoren auf \"" + Device[5:] + "\" wurden mit \"" + os.path.basename(dName) + "\" überschrieben.  ")
+                    Zeige_Sektorenblock()
+                    message.showinfo(Device, "\nDie Sektoren wurden mit \"" + os.path.basename(pfadName) + "\" überschrieben.  ")
                 else:
                     message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
 
 #-----------------------------------
 
-    dName = fdialog.askopenfilename(title="Musterdatei (512 Byte) öffnen",filetypes=[("Binärdateien","*.bin"),("Alle Dateien","*")])
+    pfadName = fdialog.askopenfilename(title="Musterdatei (512 Byte) öffnen",filetypes=[("Binärdateien","*.bin"),("Alle Dateien","*")])
 
-    if dName:
-        Anzahl = os.path.getsize(dName)
+    if pfadName:
+        Anzahl = os.path.getsize(pfadName)
         if Anzahl == 512:                     # nur Dateien mit 512 Byte zulassen
-            with open(dName, "rb") as fp:
+            with open(pfadName, "rb") as fp:
                 SektData = fp.read(512)
 
             Fenster = tk.Toplevel(Master)
@@ -837,38 +827,59 @@ def Muster_Schreiben():
             Fenster.bind("<Escape>", lambda event: Fenster.destroy())
 
         else:
-            message.showwarning(Device, "\"" + os.path.basename(dName) + "\" hat nicht die erforderliche Sektorgröße von 512 Byte.  ")
+            message.showwarning(Device, "\"" + os.path.basename(pfadName) + "\" hat nicht die erforderliche Sektorgröße von 512 Byte.  ")
 
 ##############################################################################################################
 
-def Aktl_Sektor_Vergleichen():
+def Sektoren_Vergleichen():
 
-    global Sekt2Data
+    global SektData, Sekt2Data
 
-    dName = fdialog.askopenfilename(title="Vergleichsdatei (512 Byte) öffnen",filetypes=[("Binärdateien","*.bin"),("Alle Dateien","*")])
+    pfadName = fdialog.askopenfilename(title="Vergleichsdatei öffnen",filetypes=[("Binärdateien","*.bin"),("Alle Dateien","*")])
 
-    if dName:
-        Anzahl = os.path.getsize(dName)
-        if Anzahl == 512:
-            try:
-                with open(dName, "rb") as fp:
-                    Sekt2Data = fp.read(512)
-            except:
-                message.showerror(Device, "\nDie Datei " + os.path.basename(dName) + " konnte nicht geöffnet werden.  ")
-                return
+    if pfadName:
+        datName = os.path.splitext(os.path.basename(pfadName))[0]
+        if datName[0:3] == "wde":
+            if datName.find("MasterBootRecord") != -1 or datName.find("BootSector") != -1:
+                erster = 0
+                anzahl = 1
+                GUELTIG = True
+            elif datName.find("_x") != -1 and datName.find("_n") != -1:
+                x1 = datName.find("_x")
+                x2 = datName.find("_", x1+2)
+                erster = int(datName[x1+2:x2])
+                n1 = datName.find("_n")
+                anzahl = int(datName[n1+2:])
+                GUELTIG = True
+            else:
+                message.showwarning(Device, "\nUnbekannter Dateiname \"" + os.path.basename(pfadName) + "\"  ")
+                GUELTIG = False
 
-            Verschiedene = 0
-            if Lese_Sektor(Device, SektNum):
-                for i in range(512):
-                    if SektData[i] != Sekt2Data[i]:
-                        Verschiedene += 1
-                if Verschiedene == 0:
-                    message.showinfo(Device, "\nSektor " + str(SektNum) + " und " + os.path.basename(dName) + " sind identisch.  ")
+            if GUELTIG:
+                verschiedene = 0
+                meldung = ""
+                with open(pfadName, "rb") as fp:
+                    for x in range(anzahl):
+                        Lese_Sektor(Device, erster+x)
+                        Sekt2Data = fp.read(512)
+                        meldung += "\nSektor: {:d}  -\n".format(erster+x)
+                        n = 0
+                        for i in range(512):
+                            if SektData[i] != Sekt2Data[i]:
+                                verschiedene += 1      # veränderte Bytes insgesamt
+                                n += 1                 # veränderte Bytes / Sektor
+                                if n < 64:
+                                    meldung += "{:03X}, ".format(i)
+                                    if n % 16 == 0:    meldung += "    \n"
+                                if n == 64:            meldung += "..."
+                        if n == 0:
+                            meldung = meldung[:-1] + "  ok"
+                if verschiedene == 0:
+                    message.showinfo(Device, "\n>>>>>   I D E N T I S C H   <<<<<     ")
                 else:
-                    message.showwarning(Device, "\nSektor " + str(SektNum) + " und " + os.path.basename(dName) + " haben " + str(Verschiedene) + " ungleiche Bytes.  ")
+                    message.showinfo(Device, "\n" + str(verschiedene) + " veränderte Bytes gefunden:  \n" + meldung)
         else:
-            message.showwarning(Device, "\n\"" + os.path.basename(dName) + "\" hat nicht die erforderliche Größe von 512 Byte.  ")
-
+            message.showwarning(Device, "\nUnbekannter Dateiname \"" + os.path.basename(pfadName) + "\"  ")
 
 ##############################################################################################################
 
@@ -1002,7 +1013,7 @@ def Part_Tabelle_Editieren():
                     if ReadOnly.get() == 0:
                         SektData = SektData[0:446] + bytearray.fromhex(e1) + bytearray.fromhex(e2) + bytearray.fromhex(e3) + bytearray.fromhex(e4) + bytearray.fromhex("55aa")
                         if Schreibe_Sektor(Device[0:8], 0):
-                            Zeige_Sektoren_Block()
+                            Zeige_Sektorenblock()
                             message.showinfo(Device[0:8], "\nDie Partitionstabelle von \"" + Device[5:8] + "\" wurde überschrieben.  ", parent=Fenster)
                         else:
                             message.showwarning(Device, "\nDer Masterbootsektor konnte nicht überschrieben werden.  ", parent=Fenster)
@@ -1101,20 +1112,18 @@ def Aktl_Sektor_Editieren():
                 message.showwarning(Device, "\nUngültiges Format. ", parent=Hex_Fenster)
                 return False
 
-        Sekt2Data.clear()
-        for i in range(0, len(hex_str), 3):
-            Sekt2Data += bytearray.fromhex(hex_str[i:i+2])    # Hex-Zahl -> bytearray
+        Sekt2Data = bytearray.fromhex(hex_str.replace(" ", ""))    # Hex-Zahlen-String -> bytearray
         return True
 
     def Datei_Speichern(event):
 
         if Eingabe_Pruefen():
-            if len(Device) == 8:    nDevice = Device + "_"
-            else:                   nDevice = Device
-            dName = "wde_" + nDevice[5:9] + "_" + str(SektNum) + ".bin"
-            with open(dName, "wb") as Datei:
+            if len(Device) == 8:    xDevice = Device + "_"
+            else:                   xDevice = Device
+            datName = "wde_" + xDevice[5:9] + "_" + str(SektNum) + ".bin"
+            with open(datName, "wb") as Datei:
                 Datei.write(Sekt2Data)
-            message.showinfo(Device, "\nSektor wurde in Datei " + dName + " gespeichert.  ", parent=Fenster)
+            message.showinfo(Device, "\nSektor wurde in Datei " + datName + " gespeichert.  ", parent=Fenster)
             Fenster.destroy()
 
     def Sektor_Speichern(event):
@@ -1125,7 +1134,7 @@ def Aktl_Sektor_Editieren():
                     with open(Device, "wb") as fp:
                         fp.seek(SektNum*512)
                         fp.write(Sekt2Data)
-                    Zeige_Sektoren_Block()
+                    Zeige_Sektorenblock()
                     Fenster.destroy()
                 else:
                     message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ", parent=Fenster)
@@ -1141,8 +1150,8 @@ def Aktl_Sektor_Editieren():
     def Einfuegemodus(event):
 
         if EINFUEGEN:
-            if event.char == event.keysym or event.keysym == "space":    # wenn normale Taste oder Leertaste
-                Hex_Fenster.delete("insert", "insert + 1c")              # lösche Zeichen an der akt. Cursorposition
+            if event.char == event.keysym or event.keysym == "space":    # wenn normale Taste oder Leertaste,
+                Hex_Fenster.delete("insert", "insert + 1c")              #  dann lösche Zeichen an der akt. Cursorposition
 
 #---------------------------------------------------
 
@@ -1185,7 +1194,6 @@ def Aktl_Sektor_Editieren():
         Fenster.bind("<Escape>", lambda event: Fenster.destroy())
 
 #############################################################################################################
-
 
 ##############################################################################################################
 
@@ -1267,7 +1275,7 @@ def Ueber():
     Fenster.wm_attributes("-topmost", 1)
 
     Label1 = tk.Label(Fenster, text="Woody's Disk Explorer", font="Helvetica 14 bold")
-    Label2 = tk.Label(Fenster, text="Version 1.11", font="Helvetica 12")
+    Label2 = tk.Label(Fenster, text="Version 1.05", font="Helvetica 12")
     Label3 = tk.Label(Fenster, text="Copyright © Woodstock", font="Helvetica 12")
 
     Label1.pack(padx=10, ipady=14) 
@@ -1307,16 +1315,16 @@ Menu_Device.add_command(label="  Beenden", command=Master.destroy)
 
 Menu_Backup.add_command(label="  Master Boot Record sichern", command=Master_Boot_Record_Sichern)
 Menu_Backup.add_command(label="  Bootsektor sichern", command=Bootsektor_Sichern)
-Menu_Backup.add_command(label="  Sektoren Blöcke sichern", command=Sektoren_Bloecke_Sichern)
+Menu_Backup.add_command(label="  Sektorenblock sichern", command=Sektorenblock_Sichern)
 Menu_Backup.add_separator()
 Menu_Backup.add_command(label="  MBR wiederherstellen", command=MBR_Wiederherstellen)
 Menu_Backup.add_command(label="  Bootsektor wiederherstellen", command=Bootsektor_Wiederherstellen)
-Menu_Backup.add_command(label="  Sektoren Blöcke schreiben", command=Sektoren_Bloecke_Schreiben)
+Menu_Backup.add_command(label="  Sektorenblock schreiben", command=Sektorenblock_Schreiben)
 
 Menu_Extras.add_command(label="  Musterdatei erstellen", command=Musterdatei_Erstellen)
 Menu_Extras.add_command(label="  Muster in Sektoren schreiben", command=Muster_Schreiben)
 Menu_Extras.add_separator()
-Menu_Extras.add_command(label="  Aktuellen Sektor überprüfen", command=Aktl_Sektor_Vergleichen)
+Menu_Extras.add_command(label="  Sektoren überprüfen", command=Sektoren_Vergleichen)
 Menu_Extras.add_command(label="  Zeichenkette suchen", command=Zeichenkette_Suchen)
 Menu_Extras.add_separator()
 Menu_Extras.add_command(label="  Partitionstabelle editieren", command=Part_Tabelle_Editieren)
@@ -1378,11 +1386,9 @@ if os.environ["USER"] != "root":
     print("Keine Berechtigung - bitte mit sudo starten.")
     raise SystemExit()
 
-Zeige_Sektoren_Block()
+Zeige_Sektorenblock()
 
 Master.mainloop()
 
 ##############################################################################################################
 
-
-##############################################################################################################
