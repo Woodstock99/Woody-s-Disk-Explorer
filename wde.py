@@ -302,7 +302,7 @@ def Erweiterte_Partitionen():
     if Lese_Sektor(Device[0:8], 0):
 
         for i in range(4):
-            if SektData[0x01C2+16*i] == 0x05:
+            if SektData[0x01C2+16*i] == 0x0F:      # 0x0F = LBA,  0x05 = CHS Adressierung
                 Typ = int(SektData[0x01C2+16*i])
                 Anfang = int(SektData[0x01C6+16*i] + SektData[0x01C7+16*i]*256 + SektData[0x01C8+16*i]*65536 + SektData[0x01C9+16*i]*16777216)
                 Anzahl = int(SektData[0x01CA+16*i] + SektData[0x01CB+16*i]*256 + SektData[0x01CC+16*i]*65536 + SektData[0x01CD+16*i]*16777216)
@@ -315,11 +315,11 @@ def Erweiterte_Partitionen():
 
             Fenster = tk.Toplevel(Master)
             Fenster.title(Device[0:8] + " - Erweiterte Partitionen")
-            Fenster.geometry("+" + str(Master.winfo_x()+330) + "+" + str(Master.winfo_y()+400)) 
+            Fenster.geometry("+" + str(Master.winfo_x()+360) + "+" + str(Master.winfo_y()+380)) 
             Fenster.resizable(False, False)
             Fenster.wm_attributes("-topmost", 1)
 
-            ErwText = tk.Text(Fenster, width=58, height=18, padx=60, pady=20, font=Schrift)
+            ErwText = tk.Text(Fenster, width=58, height=15, padx=60, pady=20, font=Schrift)
             ErwText.insert("end", "\n       Typ         Anfang         Anzahl        Größe\n")
             ErwText.insert("end", "──────────────────────────────────────────────────────────\n")
             ErwText.insert("end", "        {:02X} {:14d} {:14d} {:12.1f} GB\n\n".format(Typ, Anfang, Anzahl, Groesse))
