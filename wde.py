@@ -387,10 +387,6 @@ def EFI_Partitionen():
             PartText = tk.Text(Fenster, width=75, height=8, padx=60, pady=20, font=Schrift)
             PartText.insert("end", "\n     Typ          Anfang            Ende          Anzahl        Größe\n")
             PartText.insert("end",   "─────────────────────────────────────────────────────────────────────────\n")
-
-            PartText = tk.Text(Fenster, width=75, height=8, padx=60, pady=20, font=Schrift)
-            PartText.insert("end",   "\n      Typ          Anfang            Ende          Anzahl        Größe\n")
-            PartText.insert("end",     "──────────────────────────────────────────────────────────────────────────\n")
             for i in range(4):
                 PartText.insert("end", " {:d}.   {:02X}  {:14d}  {:14d}  {:14d}  {:11.1f} GB\n".format(i+1, Attrib[i], Anfang[i], Ende[i], Anzahl[i], Groesse[i]))
                 #PartText.insert("end", "      {:s}\n".format(Name[i]))
