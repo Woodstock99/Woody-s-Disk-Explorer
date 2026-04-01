@@ -302,7 +302,7 @@ def Erweiterte_Partitionen():
     if Lese_Sektor(Device[0:8], 0):
 
         for i in range(4):
-            if SektData[0x01C2+16*i] == 0x05 or SektData[0x01C2+16*i] == 0x0F:          # 0x05 = CHS, 0x0F = LBA
+            if SektData[0x01C2+16*i] == 0x05 or SektData[0x01C2+16*i] == 0x0F:        # 0x05 = CHS,  0x0F = LBA
                 Typ = int(SektData[0x01C2+16*i])
                 Anfang = int(SektData[0x01C6+16*i] + SektData[0x01C7+16*i]*256 + SektData[0x01C8+16*i]*65536 + SektData[0x01C9+16*i]*16777216)
                 Anzahl = int(SektData[0x01CA+16*i] + SektData[0x01CB+16*i]*256 + SektData[0x01CC+16*i]*65536 + SektData[0x01CD+16*i]*16777216)
@@ -374,8 +374,9 @@ def EFI_Partitionen():
                 Ende[i]   = int(SektData[0x0028+128*i]        + SektData[0x0029+128*i]*256    + SektData[0x002A+128*i]*256**2 + SektData[0x002B+128*i]*256**3) +\
                             int(SektData[0x002C+128*i]*256**4 + SektData[0x002D+128*i]*256**5 + SektData[0x002E+128*i]*256**6 + SektData[0x002F+128*i]*256**7)
             for i in range(4):
-                Attrib[i] = int(SektData[0x0030+128*i]        + SektData[0x0031+128*i]*256    + SektData[0x0032+128*i]*256**2 + SektData[0x0033+128*i]*256**3) +\
-                            int(SektData[0x0034+128*i]*256**4 + SektData[0x0035+128*i]*256**5 + SektData[0x0036+128*i]*256**6 + SektData[0x0037+128*i]*256**7)
+                #Attrib[i] = int(SektData[0x0030+128*i]        + SektData[0x0031+128*i]*256    + SektData[0x0032+128*i]*256**2 + SektData[0x0033+128*i]*256**3) +\
+                #            int(SektData[0x0034+128*i]*256**4 + SektData[0x0035+128*i]*256**5 + SektData[0x0036+128*i]*256**6 + SektData[0x0037+128*i]*256**7)
+                Attrib[i] = int(SektData[0x0037+128*i])
             for i in range(4):
                 Anzahl[i] = (Ende[i]-Anfang[i])
             for i in range(4):
@@ -385,8 +386,8 @@ def EFI_Partitionen():
             PartText.insert("end",   "\n      Typ          Anfang            Ende          Anzahl        Größe\n")
             PartText.insert("end",     "──────────────────────────────────────────────────────────────────────────\n")
             for i in range(4):
-                PartText.insert("end", " {:1d}. {:5d}  {:14d}  {:14d}  {:14d}  {:11.1f} GB\n".format(i+1, Attrib[i], Anfang[i], Ende[i], Anzahl[i], Groesse[i]))
-
+                PartText.insert("end", " {:d}.   {:02X}  {:14d}  {:14d}  {:14d}  {:11.1f} GB\n".format(i+1, Attrib[i], Anfang[i], Ende[i], Anzahl[i], Groesse[i]))
+                #PartText.insert("end", "      {:s}\n".format(Name[i]))
             PartText.pack(pady=1, padx=1)
             PartText.configure(state="disabled")
             Fenster.bind("<Escape>", lambda event: Fenster.destroy())
@@ -687,7 +688,7 @@ def Sektoren_Vergleichen():
 
     global SektData, Sekt2Data
 
-    pfadName = fdialog.askopenfilename(title="Vergleichsdatei öffnen",filetypes=[("Binärdateien","*.bin"),("Alle Dateien","*")])
+    pfadName = fdialog.askopenfilename(title="Vergleichsdatei öffnen",filetypes=[("Binärdateien","*.bin")])
 
     if pfadName:
         datName = os.path.splitext(os.path.basename(pfadName))[0]
@@ -1139,7 +1140,7 @@ def Muster_Sekt_Schreiben():
     EingabeAnzahl.bind("<Return>", Sektoren_Schreiben)
     Fenster.bind("<Escape>", lambda event: Fenster.destroy())
 
-#############################################################################################################
+##############################################################################################################
 
 ##############################################################################################################
 
@@ -1267,12 +1268,12 @@ Menu_Backup.add_command(label="  MBR wiederherstellen", command=MBR_Wiederherste
 Menu_Backup.add_command(label="  Bootsektor wiederherstellen", command=Bootsektor_Wiederherstellen)
 Menu_Backup.add_command(label="  Sektorenblock schreiben", command=Sektorenblock_Schreiben)
 
-Menu_Extras.add_command(label="  Sektoren überprüfen", command=Sektoren_Vergleichen)
 Menu_Extras.add_command(label="  Zeichenkette suchen", command=Zeichenkette_Suchen)
+Menu_Extras.add_command(label="  Sektoren überprüfen", command=Sektoren_Vergleichen)
 Menu_Extras.add_separator()
 Menu_Extras.add_command(label="  Aktuellen Sektor editieren", command=Aktl_Sektor_Editieren)
 Menu_Extras.add_command(label="  Partitionstabelle editieren", command=Part_Tabelle_Editieren)
-Menu_Extras.add_command(label="  Muster in Sektor schreiben", command=Muster_Sekt_Schreiben)
+Menu_Extras.add_command(label="  Muster in Sektoren schreiben", command=Muster_Sekt_Schreiben)
 
 Menu_Hilfe.add_command(label="  Disk Devices", command=Hilfe_Disk_Devices)
 Menu_Hilfe.add_command(label="  Partitionstypen", command=Hilfe_Partitionstypen, accelerator=" <F1> ")
