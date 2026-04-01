@@ -35,13 +35,13 @@ ReadOnly.set(1)
 
 ##############################################################################################################
 
-def Lese_Sektor(laufwerk, Sektor):
+def Lese_Sektor(laufwerk, sektor):
 
     global SektData
     
     try:
         with open(laufwerk, "rb") as fp:
-            fp.seek(Sektor*512)
+            fp.seek(sektor*512)
             SektData = fp.read(512)
             return True
     except:
@@ -49,13 +49,13 @@ def Lese_Sektor(laufwerk, Sektor):
 
 ##############################################################################################################
 
-def Schreibe_Sektor(laufwerk, Sektor):
+def Schreibe_Sektor(laufwerk, sektor):
 
     global SektData
     
     try:
         with open(laufwerk, "wb") as fp:
-            fp.seek(Sektor*512)
+            fp.seek(sektor*512)
             fp.write(SektData)
             return True
     except:
@@ -302,7 +302,7 @@ def Erweiterte_Partitionen():
     if Lese_Sektor(Device[0:8], 0):
 
         for i in range(4):
-            if SektData[0x01C2+16*i] == 0x0F:      # 0x0F = LBA,  0x05 = CHS Adressierung
+            if SektData[0x01C2+16*i] == 0x05 or SektData[0x01C2+16*i] == 0x0F:          # 0x05 = CHS, 0x0F = LBA
                 Typ = int(SektData[0x01C2+16*i])
                 Anfang = int(SektData[0x01C6+16*i] + SektData[0x01C7+16*i]*256 + SektData[0x01C8+16*i]*65536 + SektData[0x01C9+16*i]*16777216)
                 Anzahl = int(SektData[0x01CA+16*i] + SektData[0x01CB+16*i]*256 + SektData[0x01CC+16*i]*65536 + SektData[0x01CD+16*i]*16777216)
@@ -669,9 +669,9 @@ def Sektorenblock_Schreiben():
             if message.askyesno(Device, "\nSollen die Sektoren " + str(erster) + " bis " + str(erster+anzahl-1) + " überschrieben werden?  "):
                 if ReadOnly.get() == 0:
                     with open(pfadName, "rb") as fp:
-                        for i in range(int(anzahl)):
+                        for i in range(anzahl):
                             SektData = fp.read(512)
-                            Schreibe_Sektor(Device, int(erster)+i)
+                            Schreibe_Sektor(Device, erster+i)
                     Zeige_Sektorenblock()
                     message.showinfo(Device, "\nDie Sektoren " + str(erster) + " bis " + str(erster+anzahl-1) + " wurden überschrieben.  ")
                 else:
@@ -680,148 +680,6 @@ def Sektorenblock_Schreiben():
             message.showwarning(Device, "\nUnbekannter Dateiname \"" + os.path.basename(pfadName) + "\"  ")
 
 ##############################################################################################################
-
-##############################################################################################################
-
-def Musterdatei_Erstellen():
-
-    def Datei_Erstellen(event=None):
-
-        global Sekt2Data
-
-        auswahl = RadioVar.get()
-        if auswahl == 1:
-            strBytes = bytearray(EingabeAscii.get(), "utf-8")
-            datName = EingabeAscii.get()
-        else:
-            try:
-                strBytes = bytearray.fromhex(EingabeHex.get())
-                datName = EingabeHex.get()
-            except:
-                message.showerror(Device, "Kein gültiger Hex-String!")
-                return()
-            
-        Sekt2Data.clear()
-        for i in range(int(512/len(strBytes))+1):
-            Sekt2Data += strBytes 
-        datName = "wde_Muster_" + datName + ".bin"
-        try:
-            with open(datName, "wb") as fp:
-                fp.write(Sekt2Data[0:512])
-            Fenster.destroy()
-            message.showinfo(Device, "\nDie Musterdatei \"" + datName + "\" wurde erstellt. ")
-        except:
-            message.showerror(Device, "\nDie Datei \"" + datName + "\" konnte nicht erstellt werden. ", parent=Fenster)
-            return
-
-    def Auswahl_Eingabe():
-        auswahl = RadioVar.get()
-        if auswahl == 1:
-            EingabeAscii.config(state="normal")
-            EingabeHex.config(state="disabled")
-        else:
-            EingabeAscii.config(state="disabled")
-            EingabeHex.config(state="normal")
-
-#---------------------------------------------------
-
-    Fenster = tk.Toplevel(Master)
-    Fenster.title(Device)
-    Fenster.geometry("+" + str(Master.winfo_x()+450) + "+" + str(Master.winfo_y()+280)) 
-    Fenster.resizable(False, False)
-    Fenster.wm_attributes("-topmost", 1)
-
-    RadioVar = tk.IntVar(value=1)
-
-    TextOben = tk.Label(Fenster, text="Gewünschte Muster-Zeichenkette eingeben:", font="Helvetica 11")
-    RadioAscii = tk.Radiobutton(Fenster, variable=RadioVar, value=1, command=Auswahl_Eingabe)
-    TextAscii = tk.Label(Fenster, text="Ascii-String:", font="Helvetica 11")
-    EingabeAscii = tk.Entry(Fenster, bd=3, width=28, font=Schrift)
-    RadioHex = tk.Radiobutton(Fenster, variable=RadioVar, value=2, command=Auswahl_Eingabe)
-    TextHex = tk.Label(Fenster, text="Hex-String:", font="Helvetica 11")
-    EingabeHex = tk.Entry(Fenster, bd=3, width=28, font=Schrift)
-    TextHinweis = tk.Label(Fenster, text="Hinweis: Es wird eine Binärdatei mit 512 Byte erstellt.", font="Helvetica 9")
-    ButtonErstellen = tk.Button(Fenster, bd=3, text="Erstellen", font="Helvetica 11", command=Datei_Erstellen)
-    ButtonAbbrechen = tk.Button(Fenster, bd=3, text="Abbrechen", font="Helvetica 11", command=Fenster.destroy)
-
-    tk.Label(Fenster).grid(row=0, column=0, padx=10)
-    TextOben.grid(row=1, column=0, columnspan=7, padx=5, pady=15)
-    RadioAscii.grid(row=2, column=1, padx=5, pady=3)
-    TextAscii.grid(row=2, column=2, padx=5, pady=3, sticky="e")
-    EingabeAscii.grid(row=2, column=3, columnspan=3, padx=1, pady=3)
-    RadioHex.grid(row=3, column=1, padx=5, pady=3)
-    TextHex.grid(row=3, column=2, padx=5, pady=3, sticky="e")
-    EingabeHex.grid(row=3, column=3, columnspan=3, padx=1, pady=3)
-    TextHinweis.grid(row=4, column=0, columnspan=7, pady=15)
-    ButtonErstellen.grid(row=5, column=0, columnspan=7, padx=80, pady=7, ipadx=28, sticky="w")
-    ButtonAbbrechen.grid(row=5, column=0, columnspan=7, padx=80, pady=7, ipadx=15, sticky="e")
-    tk.Label(Fenster).grid(row=6, column=6, padx=20)
-
-    EingabeAscii.config(state="normal")
-    EingabeHex.config(state="disabled")
-    EingabeAscii.focus_set()
-    EingabeAscii.bind("<Return>", Datei_Erstellen)
-    EingabeHex.bind("<Return>", Datei_Erstellen)
-    Fenster.bind("<Escape>", lambda event: Fenster.destroy())
-
-##############################################################################################################
-
-def Muster_Schreiben():
-
-    global SektData
-
-    def Sektoren_Schreiben(e):
-
-        Erster = EingabeErster.get()
-        Anzahl = EingabeAnzahl.get()
-        Letzter = int(Erster) + int(Anzahl) -1
-
-        if Erster.isdecimal() and Anzahl.isdecimal():
-            Fenster.destroy()
-            if message.askyesno(Device, "\nSollen die Sektoren " + Erster + " bis " + (str(Letzter)) + " überschrieben werden?  "):
-                if ReadOnly.get() == 0:
-                    for i in range(int(Anzahl)):
-                        Schreibe_Sektor(Device, int(Erster)+i)
-                    Zeige_Sektorenblock()
-                    message.showinfo(Device, "\nDie Sektoren wurden mit \"" + os.path.basename(pfadName) + "\" überschrieben.  ")
-                else:
-                    message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
-
-#-----------------------------------
-
-    pfadName = fdialog.askopenfilename(title="Musterdatei (512 Byte) öffnen",filetypes=[("Binärdateien","*.bin"),("Alle Dateien","*")])
-
-    if pfadName:
-        Anzahl = os.path.getsize(pfadName)
-        if Anzahl == 512:                     # nur Dateien mit 512 Byte zulassen
-            with open(pfadName, "rb") as fp:
-                SektData = fp.read(512)
-
-            Fenster = tk.Toplevel(Master)
-            Fenster.title(Device)
-            Fenster.geometry("+" + str(Master.winfo_x()+580) + "+" + str(Master.winfo_y()+408)) 
-            Fenster.resizable(False, False)
-            Fenster.wm_attributes("-topmost", 1)
-
-            TextErster = tk.Label(Fenster, text="1.Sektor:", font="Helvetica 11")
-            TextAnzahl = tk.Label(Fenster, text=" Anzahl :", font="Helvetica 11")
-
-            EingabeErster = tk.Entry(Fenster, bd=3, width=12, font=Schrift)
-            EingabeAnzahl = tk.Entry(Fenster, bd=3, width=12, font=Schrift)
-            tk.Label(Fenster).grid(row=0, column=0, padx=20, pady=1)
-            TextErster.grid(row=1, column=1, padx=5, pady=3, sticky="w")    # linksbündig
-            TextAnzahl.grid(row=2, column=1, padx=5, pady=3)
-            EingabeErster.grid(row=1, column=2, padx=5, pady=3)
-            EingabeAnzahl.grid(row=2, column=2, padx=5, pady=3)
-            tk.Label(Fenster).grid(row=3, column=3, padx=20, pady=1)
-
-            EingabeErster.focus_set()
-            EingabeErster.bind("<Return>", Sektoren_Schreiben)
-            EingabeAnzahl.bind("<Return>", Sektoren_Schreiben)
-            Fenster.bind("<Escape>", lambda event: Fenster.destroy())
-
-        else:
-            message.showwarning(Device, "\"" + os.path.basename(pfadName) + "\" hat nicht die erforderliche Sektorgröße von 512 Byte.  ")
 
 ##############################################################################################################
 
@@ -1189,6 +1047,100 @@ def Aktl_Sektor_Editieren():
 
 #############################################################################################################
 
+def Muster_Sekt_Schreiben():
+
+    def Sektoren_Schreiben(event=None):
+
+        global Sekt2Data
+
+        auswahl = RadioVar.get()
+        if auswahl == 1:
+            strBytes = bytearray(EingabeAscii.get(), "utf-8")
+        else:
+            try:
+                strBytes = bytearray.fromhex(EingabeHex.get())
+            except:
+                message.showerror(Device, "Kein gültiger Hex-String!")
+                return()
+            
+        Erster = EingabeErster.get()
+        Anzahl = EingabeAnzahl.get()
+
+        if Erster.isdecimal() and Anzahl.isdecimal():
+            Letzter = int(Erster) + int(Anzahl) -1
+            Fenster.destroy()
+            if message.askyesno(Device, "\nSollen die Sektoren " + Erster + " bis " + (str(Letzter)) + " überschrieben werden?  "):
+                if ReadOnly.get() == 0:
+                    Sekt2Data.clear()
+                    for i in range(int(512/len(strBytes)+1)):
+                        Sekt2Data += strBytes
+                    for i in range(int(Anzahl)):
+                        with open(Device, "wb") as fp:
+                            fp.seek((int(Erster)+i)*512)
+                            fp.write(Sekt2Data[0:512])
+                    Zeige_Sektorenblock()
+                    message.showinfo(Device, "\nDie Sektoren " + Erster + " bis " + (str(Letzter)) + " wurden überschrieben.  ")
+                else:
+                    message.showwarning(Device, "\nKonnte nicht schreiben, der Schreibschutz ist aktiviert.  ")
+
+    def Auswahl_Eingabe():
+        auswahl = RadioVar.get()
+        if auswahl == 1:
+            EingabeAscii.config(state="normal")
+            EingabeHex.config(state="disabled")
+        else:
+            EingabeAscii.config(state="disabled")
+            EingabeHex.config(state="normal")
+
+#---------------------------------------------------
+
+    Fenster = tk.Toplevel(Master)
+    Fenster.title(Device)
+    Fenster.geometry("+" + str(Master.winfo_x()+450) + "+" + str(Master.winfo_y()+280)) 
+    Fenster.resizable(False, False)
+    Fenster.wm_attributes("-topmost", 1)
+
+    RadioVar = tk.IntVar(value=1)
+
+    TextOben = tk.Label(Fenster, text="Muster-Zeichenkette eingeben:", font="Helvetica 11")
+    RadioAscii = tk.Radiobutton(Fenster, variable=RadioVar, value=1, command=Auswahl_Eingabe)
+    TextAscii = tk.Label(Fenster, text="Ascii-String:", font="Helvetica 11")
+    EingabeAscii = tk.Entry(Fenster, bd=3, width=28, font=Schrift)
+    RadioHex = tk.Radiobutton(Fenster, variable=RadioVar, value=2, command=Auswahl_Eingabe)
+    TextHex = tk.Label(Fenster, text="Hex-String:", font="Helvetica 11")
+    EingabeHex = tk.Entry(Fenster, bd=3, width=28, font=Schrift)
+    TextErster = tk.Label(Fenster, text="Erster Sektor:", font="Helvetica 11")
+    EingabeErster = tk.Entry(Fenster, bd=3, width=14, font=Schrift)
+    TextAnzahl = tk.Label(Fenster, text="Anzahl:", font="Helvetica 11")
+    EingabeAnzahl = tk.Entry(Fenster, bd=3, width=6, font=Schrift)
+    ButtonSchreiben = tk.Button(Fenster, bd=3, text="Überschreiben", font="Helvetica 11", command=Sektoren_Schreiben)
+    ButtonAbbrechen = tk.Button(Fenster, bd=3, text="Abbrechen", font="Helvetica 11", command=Fenster.destroy)
+
+    tk.Label(Fenster).grid(row=0, column=0, padx=10)
+    TextOben.grid(row=1, column=0, columnspan=9, padx=5, pady=15)
+    RadioAscii.grid(row=2, column=1, padx=5, pady=3)
+    TextAscii.grid(row=2, column=2, padx=5, pady=3, sticky="e")
+    EingabeAscii.grid(row=2, column=3, columnspan=3, padx=1, pady=3)
+    RadioHex.grid(row=3, column=1, padx=5, pady=3)
+    TextHex.grid(row=3, column=2, padx=5, pady=3, sticky="e")
+    EingabeHex.grid(row=3, column=3, columnspan=3, padx=1, pady=3)
+    TextErster.grid(row=4, column=1, columnspan=2, padx=5, pady=3, sticky="e")
+    EingabeErster.grid(row=4, column=3, padx=1, pady=3)
+    TextAnzahl.grid(row=4, column=4, padx=5, pady=3, sticky="e")
+    EingabeAnzahl.grid(row=4, column=5, padx=1, pady=3)
+    tk.Label(Fenster).grid(row=5, column=0, padx=10)
+    ButtonSchreiben.grid(row=6, column=0, columnspan=9, padx=80, pady=7, ipadx=10, sticky="w")
+    ButtonAbbrechen.grid(row=6, column=0, columnspan=9, padx=80, pady=7, ipadx=24, sticky="e")
+    tk.Label(Fenster).grid(row=7, column=8, padx=20)
+
+    EingabeAscii.config(state="normal")
+    EingabeHex.config(state="disabled")
+    EingabeAscii.focus_set()
+    EingabeAnzahl.bind("<Return>", Sektoren_Schreiben)
+    Fenster.bind("<Escape>", lambda event: Fenster.destroy())
+
+#############################################################################################################
+
 ##############################################################################################################
 
 def Hilfe_Disk_Devices():
@@ -1315,14 +1267,12 @@ Menu_Backup.add_command(label="  MBR wiederherstellen", command=MBR_Wiederherste
 Menu_Backup.add_command(label="  Bootsektor wiederherstellen", command=Bootsektor_Wiederherstellen)
 Menu_Backup.add_command(label="  Sektorenblock schreiben", command=Sektorenblock_Schreiben)
 
-Menu_Extras.add_command(label="  Musterdatei erstellen", command=Musterdatei_Erstellen)
-Menu_Extras.add_command(label="  Muster in Sektoren schreiben", command=Muster_Schreiben)
-Menu_Extras.add_separator()
 Menu_Extras.add_command(label="  Sektoren überprüfen", command=Sektoren_Vergleichen)
 Menu_Extras.add_command(label="  Zeichenkette suchen", command=Zeichenkette_Suchen)
 Menu_Extras.add_separator()
-Menu_Extras.add_command(label="  Partitionstabelle editieren", command=Part_Tabelle_Editieren)
 Menu_Extras.add_command(label="  Aktuellen Sektor editieren", command=Aktl_Sektor_Editieren)
+Menu_Extras.add_command(label="  Partitionstabelle editieren", command=Part_Tabelle_Editieren)
+Menu_Extras.add_command(label="  Muster in Sektor schreiben", command=Muster_Sekt_Schreiben)
 
 Menu_Hilfe.add_command(label="  Disk Devices", command=Hilfe_Disk_Devices)
 Menu_Hilfe.add_command(label="  Partitionstypen", command=Hilfe_Partitionstypen, accelerator=" <F1> ")
