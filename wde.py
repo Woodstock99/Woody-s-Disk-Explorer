@@ -355,6 +355,7 @@ def EFI_Partitionen():
     Attrib = [0,0,0,0]
     Anzahl = [0,0,0,0]
     Groesse = [0,0,0,0]
+    Name = ["","","",""]
 
     if Lese_Sektor(Device[0:8], 1):
 
@@ -381,6 +382,11 @@ def EFI_Partitionen():
                 Anzahl[i] = (Ende[i]-Anfang[i])
             for i in range(4):
                 Groesse[i] = (Ende[i]-Anfang[i])*512/10**9
+            for i in range(4):
+                Name[i] = SektData[0x38+128*i:0x80+128*i].decode("utf-16-le")
+            PartText = tk.Text(Fenster, width=75, height=8, padx=60, pady=20, font=Schrift)
+            PartText.insert("end", "\n     Typ          Anfang            Ende          Anzahl        Größe\n")
+            PartText.insert("end",   "─────────────────────────────────────────────────────────────────────────\n")
 
             PartText = tk.Text(Fenster, width=75, height=8, padx=60, pady=20, font=Schrift)
             PartText.insert("end",   "\n      Typ          Anfang            Ende          Anzahl        Größe\n")
