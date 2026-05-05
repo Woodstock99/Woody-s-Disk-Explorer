@@ -1,7 +1,5 @@
 # Woody's Disk Explorer
 
-### Beschreibung:
-
 Woody's Disk Explorer stellt die physischen Sektoren einer Festplatte 
 (HDD/SSD/USB) dar. Die Sektoren können analysiert, überprüft und bei 
 Bedarf auch editiert werden. Backup-Funktionen ermöglichen die 
