@@ -30,7 +30,7 @@ Root-Rechten gestartet werden.
 ### Getestet mit:
 
 - Arch Linux 
-- Linux-Mint
+- Linux Mint
 
 ### Lizenz:
 
