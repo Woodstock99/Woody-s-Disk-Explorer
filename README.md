@@ -35,3 +35,5 @@ Root-Rechten gestartet werden.
 ### Lizenz:
 
 - GNU GPL3
+
+![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgithub.com%2FWoodstock99%2FWoody-s-Disk-Explorer&label=Disk-Explorer&icon=stars&color=%230d6efd&message=&style=flat&tz=UTC)
