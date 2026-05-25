@@ -36,4 +36,4 @@ Root-Rechten gestartet werden.
 
 - GNU GPL3
 
-![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgithub.com%2FWoodstock99%2FWoody-s-Disk-Explorer&label=Disk-Explorer&icon=stars&color=%230d6efd&message=&style=flat&tz=UTC)
+![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgithub.com%2FWoodstock99%2FWoody-s-Disk-Explorer&label=Disk+Explrer&icon=floppy&color=%23198754&message=&style=plastic&tz=UTC)
