@@ -36,5 +36,4 @@ Root-Rechten gestartet werden.
 
 - GNU GPL3
 
-![Badge](https://myhits.vercel.app/api/hit/https%3A%2F%2Fgithub.com%2FWoodstock99%2FWoddy-s-Disk-Explorer?color=FF0000&label=Disk-Explorer&size=large&base_count=100)
-
+![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgithub.com%2FWoodstock99%2FWoody-s-Disk-Explorer&label=Disk-Explorer&icon=floppy&color=%230a58ca&message=&style=flat&tz=UTC)
